@@ -25,6 +25,37 @@ The dataset I will be using for this project comes from the UC Irvine Machine Le
   
 # Data  
   
+This section loads the data, filters to selected day of the week, removes irrelevant columns, and creates a training and a test set.
+  
+```{r data}
+
+#Loading Data
+news <- read_csv('OnlineNewsPopularity/OnlineNewsPopularity.csv')
+
+#Filtering to include only data for selected day of the week
+#Removing non-predictive columns, columns associated with weekday, and columns about LDA closeness
+day_data <- news %>%
+  filter(get(params$day) == 1) %>%
+  select(3:31, 45:61)
+
+#Creating training and testing set
+#Setting seed for reproducibility
+set.seed(68)
+
+train_index <- sample(1:nrow(day_data), size = .7 * nrow(day_data))
+
+train_x <- day_data[train_index, -46]
+train_y <- day_data[train_index, 46]
+
+test_x <- day_data[-train_index, -46]
+test_y <- day_data[-train_index, 46]
+
+```
+  
+In the data section above, I removed columns 1, 2, and 32-44. Columns 1 and 2 contained the URL to the post and the number of days between when the article was published and this dataset was generated. Both of these columns are non predictive. Columns 32-39 contain indicator variables for the day of the week that the article was published. Because we are already filtering so the dataset only contains posts for a selected day of the week, these columns become irrelevant. Finally, columns 40-44 contain LDA closeness scores for different topics. These topics are unknown so these columns were removed for the sake of clarity.  
+  
+After removing these columns, we are left with 45 features. 11 of these features are related to words/content in the article title and/or the article itself. The include features such as number of words in the title/article, average word length, number of images in the article, number of videos in the article, etc. 6 of these features are indicators of the data channel of the article, i.e lifestyle, entertainment, business, social media, tech, or world. 12 columns contain information on the min, max, and average number of shares of keywords in the article and the number of shares of other Mashable articles referenced in the article. Finally, 16 columns contain information about the sentiment of the article. Some of these columns include the rate of positive/negative words, the text subjectivity, the title sentiment polarity, etc.  
+  
 # EDA  
   
 # Modelling  
