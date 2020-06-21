@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 #Loading requires packages
 library(tidyverse)
 library(rmarkdown)
+library(RColorBrewer)
 
 ```
   
@@ -44,11 +45,13 @@ set.seed(68)
 
 train_index <- sample(1:nrow(day_data), size = .7 * nrow(day_data))
 
-train_x <- day_data[train_index, -46]
-train_y <- day_data[train_index, 46]
+train <- day_data[train_index, ]
+train_x <- train[ , -46]
+train_y <- train[ , 46]
 
-test_x <- day_data[-train_index, -46]
-test_y <- day_data[-train_index, 46]
+test <- day_data[-train_index, ]
+test_x <- test[ , -46]
+test_y <- test[ , 46]
 
 ```
   
@@ -57,6 +60,49 @@ In the data section above, I removed columns 1, 2, and 32-44. Columns 1 and 2 co
 After removing these columns, we are left with 45 features. 11 of these features are related to words/content in the article title and/or the article itself. The include features such as number of words in the title/article, average word length, number of images in the article, number of videos in the article, etc. 6 of these features are indicators of the data channel of the article, i.e lifestyle, entertainment, business, social media, tech, or world. 12 columns contain information on the min, max, and average number of shares of keywords in the article and the number of shares of other Mashable articles referenced in the article. Finally, 16 columns contain information about the sentiment of the article. Some of these columns include the rate of positive/negative words, the text subjectivity, the title sentiment polarity, etc.  
   
 # EDA  
+  
+This section performs some exploratory data analysis to get an overview of the data we are working with.  
+  
+```{r target}
+
+#Getting summary stats of the response
+summary(train_y)
+
+#Plotting a histogram of the response
+g <- ggplot(train, aes(x = shares))
+g + geom_histogram(fill = 'skyblue')
+
+#Response is heavily skewed, plotting histogram after log transform
+g <- ggplot(train, aes(x = log(shares)))
+g + geom_histogram(fill = 'skyblue')
+
+```
+  
+The first plot above shows a histogram of the target variable, shares. We can see the number of shares is heavily skewed. The histogram of log shares looks better.  
+  
+```{r barchart}
+
+#Creating a summary table of average shares per each data channel
+temp <- train %>%
+  group_by(data_channel_is_bus, data_channel_is_entertainment,  #Grouping by data channel columns
+           data_channel_is_lifestyle, data_channel_is_socmed, 
+           data_channel_is_tech, data_channel_is_world) %>%
+  summarize(avg_shares = mean(shares)) %>%                      #Creating summary stat
+  gather(1:6, key = 'channel', value = 'indicator') %>%         #Creating categorical Channel column
+  filter(indicator == 1)                                        #Filtering to include necessary rows
+
+#Creating a bar chart of average shares per channel
+h <- ggplot(temp, aes(x = channel, y = avg_shares))
+h + geom_bar(aes(fill = channel), stat = 'identity', show.legend = FALSE) +
+  scale_x_discrete(labels = c('Business', 'Entertainment', 'Lifestyle', 
+                              'Social Media', 'Technology', 'World' )) +
+  scale_fill_brewer(palette = 'Set2') +
+  labs(title = 'Average Shares by Data Channel', x = 'Channel', y = 'Average Shares')
+
+```
+  
+The plot above shows of the average shares per channel for the selected day.  
+  
   
 # Modelling  
   
