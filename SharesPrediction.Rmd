@@ -1,0 +1,33 @@
+---
+title: "ST558 Project 2"
+author: "David Weck"
+date: "6/20/2020"
+output:
+    rmarkdown::github_document:
+      toc: true
+      toc_depth: 1
+params:
+  day: weekday_is_monday
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+#Loading requires packages
+library(tidyverse)
+library(rmarkdown)
+
+```
+  
+# Introduction  
+  
+The dataset I will be using for this project comes from the UC Irvine Machine Learning Repository. It can be found [here](https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity). It contains information about articles posted by Mashable over a 2 year period. The target variable in the dataset is the number of shares. There are 58 features in this dataset. These features include items like number of words in the title, number of images in the article, polarity scores, etc. The objective of my analysis is to use some of these features to predict the number of shares that an article will receive. To do this, I will be fitting one linear regression model and one non-linear regression model. I will be automating R Markdown to create a separate analysis for each day of the week - i.e there will be 7 different analyses: one for articles posted on Monday, one for articles posted on Tuesday, etc.  
+  
+# Data  
+  
+# EDA  
+  
+# Modelling  
+  
+# Automation  
+  
