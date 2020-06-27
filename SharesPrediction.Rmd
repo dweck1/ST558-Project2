@@ -17,12 +17,13 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 library(tidyverse)
 library(rmarkdown)
 library(RColorBrewer)
+library(caret)
 
 ```
   
 # Introduction  
   
-The dataset I will be using for this project comes from the UC Irvine Machine Learning Repository. It can be found [here](https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity). It contains information about articles posted by Mashable over a 2 year period. The target variable in the dataset is the number of shares. There are 58 features in this dataset. These features include items like number of words in the title, number of images in the article, polarity scores, etc. The objective of my analysis is to use some of these features to predict the number of shares that an article will receive. To do this, I will be fitting one linear regression model and one non-linear regression model. I will be automating R Markdown to create a separate analysis for each day of the week - i.e there will be 7 different analyses: one for articles posted on Monday, one for articles posted on Tuesday, etc.  
+The dataset I will be using for this project comes from the UC Irvine Machine Learning Repository. It can be found [here](https://archive.ics.uci.edu/ml/datasets/Online+News+Popularity). It contains information about articles posted by Mashable over a 2 year period. The target variable in the dataset is the number of shares. There are 58 features in this dataset. These features include items like number of words in the title, number of images in the article, polarity scores, etc. The objective of my analysis is to use some of these features to predict the number of shares that an article will receive. To do this, I will be fitting one linear regression model using the lasso and one non-linear ensemble model. I will be automating R Markdown to create a separate analysis for each day of the week - i.e there will be 7 different analyses: one for articles posted on Monday, one for articles posted on Tuesday, etc.  
   
 # Data  
   
@@ -78,7 +79,19 @@ g + geom_histogram(fill = 'skyblue')
 
 ```
   
-The first plot above shows a histogram of the target variable, shares. We can see the number of shares is heavily skewed. The histogram of log shares looks better.  
+The first plot above shows a histogram of the target variable, shares. We can see the number of shares is heavily skewed. The histogram of log shares looks better.  I will use log shares as the response.  
+  
+```{r boxplot}
+
+#Making a boxplot of of log(shares)
+h <- ggplot(train, aes(x = params$day, y = log(shares)))
+h + geom_boxplot(fill = 'skyblue') +
+  theme(axis.text.x = element_blank()) +
+  labs(x = str_to_title(str_sub(params$day, start = 12)), y = 'Log Shares',
+       title = paste('Log Shares on', str_to_title(str_sub(params$day, start = 12))))
+```
+  
+Since there are outliers present, I will create a training set with outliers removed. I will fit models to the original training set and the training set with outliers removed.   
   
 ```{r barchart}
 
@@ -87,22 +100,21 @@ temp <- train %>%
   group_by(data_channel_is_bus, data_channel_is_entertainment,  #Grouping by data channel columns
            data_channel_is_lifestyle, data_channel_is_socmed, 
            data_channel_is_tech, data_channel_is_world) %>%
-  summarize(avg_shares = mean(shares)) %>%                      #Creating summary stat
+  summarize(med_shares = median(shares)) %>%                      #Creating summary stat
   gather(1:6, key = 'channel', value = 'indicator') %>%         #Creating categorical Channel column
   filter(indicator == 1)                                        #Filtering to include necessary rows
 
-#Creating a bar chart of average shares per channel
-h <- ggplot(temp, aes(x = channel, y = avg_shares))
-h + geom_bar(aes(fill = channel), stat = 'identity', show.legend = FALSE) +
+#Creating a bar chart of median shares per channel
+j <- ggplot(temp, aes(x = channel, y = med_shares))
+j + geom_bar(aes(fill = channel), stat = 'identity', show.legend = FALSE) +
   scale_x_discrete(labels = c('Business', 'Entertainment', 'Lifestyle', 
                               'Social Media', 'Technology', 'World' )) +
   scale_fill_brewer(palette = 'Set2') +
-  labs(title = 'Average Shares by Data Channel', x = 'Channel', y = 'Average Shares')
+  labs(title = 'Median Shares by Data Channel', x = 'Channel', y = 'Median Shares')
 
 ```
   
-The plot above shows of the average shares per channel for the selected day.  
-  
+The plot above shows of the median shares per channel for `r str_to_title(str_sub(params$day, start = 12))`.  
   
 # Modelling  
   
