@@ -218,7 +218,7 @@ reports <- tibble(output_files, params_list)
 
 ```
   
-Run the following code in the console to knit this document for each day of the week  
+After running the code above, run the following code in the console to knit this document for each day of the week  
   
 ```{r render, eval = FALSE}
 
