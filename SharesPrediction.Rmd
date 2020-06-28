@@ -210,7 +210,7 @@ days <- c('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 's
 
 day_list <- paste('weekday', 'is', days, sep = '_')
 
-output_files <- paste0(str_to_title(days), 'Analysis.html')
+output_files <- paste0(str_to_title(days), 'Analysis.md')
 
 params_list <- lapply(day_list, FUN = function(x){list(day = x)})
 
