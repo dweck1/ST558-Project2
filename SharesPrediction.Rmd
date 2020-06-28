@@ -172,17 +172,17 @@ Next, I will fit a random forest to both the dataset. Then, we will compare the 
 #Will utilize same repeated cross validation 
 
 #Setting up parameter grid
-grid <- expand.grid(predFixed = as.integer(sqrt(ncol(train))), minNode = 5:10)
+grid <- expand.grid(mtry = as.integer(sqrt(ncol(train))))
 
 #Training random forest on full dataset
 rf_mod <- train(train_x, log(train$shares),
-                 method = 'Rborist',
+                 method = 'rf',
                  tuneGrid = grid,
                  trControl = control)
 
 #Training random forest on full dataset
 rf_mod2 <- train(train_x_no_outliers, log(train_no_outliers$shares),
-                 method = 'Rborist',
+                 method = 'rf',
                  tuneGrid = grid,
                  trControl = control)
 
@@ -199,6 +199,8 @@ rf_log_preds2 <- predict(rf_mod2, newdata = test_x)
 Again the model fit on the full data outperforms the model with outliers removed.  
   
 The MSE of the best random forest model is lower than that of the best stepwise selection model. This means the random forest fit on the full dataset is the best of all the models.  
+  
+This is not surprising because we can usually expect a flexible ensemble method like a random forest to perform better than a linear method in cases like this.  
   
 # Automation  
   
