@@ -101,7 +101,7 @@ The plot above shows of the median shares per channel for `r str_to_title(str_su
   
 # Modelling  
   
-As mentioned above, I will be fitting a linear regression model and a random forest. The untransformed response is quite skewed so I will be using log shares as the target variable. I will be fitting each model to both the full dataset and the dataset with outliers removed.
+As mentioned above, I will be fitting a linear regression model and a random forest. The untransformed response is quite skewed so I will be using log shares as the target variable. I will be fitting each model to both the full dataset and the dataset with outliers removed and selecting the best based on the mean squared error of prediction on a test set.
   
 To fit the models, I will use the `caret` package. This package is very useful because it trains models over different combinations of tuning parameters and then selects the best model. To select the best model, I will be using repeated 10-fold cross-validation. This method repeats cross-validation of the training set for different tuning parameters and selects the model with the lowest RMSE as the best.  
   
@@ -122,7 +122,8 @@ train_no_outliers <- train[-outliers, ]
 train_x_no_outliers <- train_x[-outliers, ]
 train_y_no_outliers <- train_y[-outliers, ]
 ```
-
+  
+Next, I will fit a linear regression model using stepwise selection. Repeated cross-validation will select the best number of variables to include in the model.  
   
 ```{r stepwise}
 
@@ -197,6 +198,36 @@ rf_log_preds2 <- predict(rf_mod2, newdata = test_x)
   
 Again the model fit on the full data outperforms the model with outliers removed.  
   
-The MSE of the best random forest model is lower than that of the best stepwise selection model. This means the random forest is the better of the two models.  
+The MSE of the best random forest model is lower than that of the best stepwise selection model. This means the random forest fit on the full dataset is the best of all the models.  
   
 # Automation  
+  
+The code below sets up automation of these reports so that a different report is produced for each day of the week.  
+  
+```{r automate}
+
+days <- c('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')
+
+day_list <- paste('weekday', 'is', days, sep = '_')
+
+output_files <- paste0(str_to_title(days), 'Analysis.html')
+
+params_list <- lapply(day_list, FUN = function(x){list(day = x)})
+
+reports <- tibble(output_files, params_list)
+
+```
+  
+Run the following code in the console to knit this document for each day of the week  
+  
+```{r render, eval = FALSE}
+
+apply(reports, MARGIN = 1, 
+            FUN = function(x){
+                render(input = "SharesPrediction.Rmd", output_file = x[[1]], params = x[[2]])
+                })
+
+```
+
+
+
