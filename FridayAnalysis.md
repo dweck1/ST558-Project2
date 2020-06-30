@@ -207,6 +207,7 @@ stepwise_mod <- train(train_x_pp, log(train$shares),
 #Preprocessing dataset with outliers removed
 pp_no_outliers <- preProcess(train_x_no_outliers, c('center', 'scale'))
 train_x_no_outliers_pp <- predict(pp_no_outliers, train_x_no_outliers)
+test_x_pp2 <- predict(pp_no_outliers, test_x)
 
 #Training model on full dataset
 stepwise_mod2 <- train(train_x_no_outliers_pp, log(train_no_outliers$shares),
@@ -216,7 +217,7 @@ stepwise_mod2 <- train(train_x_no_outliers_pp, log(train_no_outliers$shares),
 
 #Generating predictions from each model
 log_preds <- predict(stepwise_mod, newdata = test_x_pp)
-log_preds2 <- predict(stepwise_mod2, newdata = test_x_pp)
+log_preds2 <- predict(stepwise_mod2, newdata = test_x_pp2)
 
 #Calculating test MSE
 (stepwise_MSE <- mean((log(test$shares) - log_preds) ^ 2))
@@ -228,12 +229,9 @@ log_preds2 <- predict(stepwise_mod2, newdata = test_x_pp)
 (stepwise_MSE2 <- mean((log(test$shares) - log_preds2) ^ 2))
 ```
 
-    ## [1] 0.7373676
+    ## [1] 0.7366415
 
-The model fit on the full dataset has lower test MSE. This is the better
-of the two models.
-
-Next, I will fit a random forest to both the dataset. Then, we will
+Next, I will fit a random forest to both the datasets. Then, we will
 compare the test MSE from the random forest to that of the stepwise
 selection model. The model with the lowest test MSE will be considered
 as the best.
@@ -272,7 +270,7 @@ rf_log_preds2 <- predict(rf_mod2, newdata = test_x)
 
     ## [1] 0.7033891
 
-Again the model fit on the full data outperforms the model with outliers
+The model fit on the full data outperforms the model with outliers
 removed.
 
 The MSE of the best random forest model is lower than that of the best
